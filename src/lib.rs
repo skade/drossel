@@ -72,11 +72,10 @@ command!(Get, "GET", 3,
 
 command!(Set, "SET", 3,
   {
-    let subargs_str = args[0];
-    let subargs: ~[&[u8]] = subargs_str.split(|ch| ch == &('/' as u8)).collect();
-    let queue_name = subargs[0];
-    let command_args = subargs.tail();
-    let result = format!("Command: SET queue: {}, args: {}", queue_name, command_args);
+    let queue_name = args[0];
+    let expiration = args[1];
+    let payload = args[2];
+    let result = format!("Command: SET queue: {}, expiration: {}, payload: {}", queue_name, expiration, payload);
     result.into_bytes()
   },
   {}
