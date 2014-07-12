@@ -1,5 +1,4 @@
 #![crate_type = "lib"]
-#![crate_name = "drossel"]
 #![feature(globs,phase,macro_rules)]
 //#![phase(syntax, link)] extern crate log;
 
