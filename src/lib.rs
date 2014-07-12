@@ -1,42 +1,37 @@
 #![crate_type = "lib"]
-#![crate_id = "drossel#0.0.1"]
+#![crate_name = "drossel"]
 #![feature(globs,phase,macro_rules)]
-#![phase(syntax, link)] extern crate log;
+//#![phase(syntax, link)] extern crate log;
 
 use std::from_str::FromStr;
 
 macro_rules! command(
-  ($com:ident, $str:expr, $len:expr, $execute:block, $timeout:block) => ( // invoke it like `(input_5 SpecialE)`
+  ($com:ident, $str:expr, $len:expr) => ( // invoke it like `(input_5 SpecialE)`
     pub struct $com;
 
-    impl FromStr for ~$com {
-      fn from_str(s: &str) -> Option<~$com> {
-        if s.len() == $len && s.slice_to($len) == &$str {
-          Some(~$com)
+    impl FromStr for Box<$com> {
+      fn from_str(s: &str) -> Option<Box<$com>> {
+        if s == $str {
+          Some(box $com)
         } else {
           None
         }
       }
     }
-
-    impl Command for $com {
-      fn execute(&self, args: &[&[u8]]) -> ~[u8] $execute
-      fn timeout(&self) $timeout
-    }
   );
 )
 
 macro_rules! cmd_from_string(
-  ($com:ident) => (
-    match from_str::<~$com>(s) {
-      Some(cmd) => { Some(cmd as ~Command) },
+  ($com:ident, $var:expr) => (
+    match from_str::<Box<$com>>($var) {
+      Some(cmd) => { return Some(cmd as Box<Command>) },
       None => { None }
     };
   );
 )
 
 pub trait Command {
-  fn execute(&self, args: &[&[u8]]) -> ~[u8];
+  fn execute(&self, args: &[&[u8]]) -> Vec<u8>;
   fn timeout(&self);
 }
 
@@ -44,49 +39,48 @@ pub trait AcknowledgeableCommand {
   fn acknowledge(&self);
 }
 
-command!(Ping, "PING", 4,
-  {
-    (~"PONG").into_bytes()
-  },
-  {}
-)
+command!(Ping, "PING", 4)
 
-command!(Hoge, "HOGE", 4,
-  {
-    (~"FUGE").into_bytes()
-  },
-  {}
-)
+impl Command for Ping {
+  fn execute(&self, _args: &[&[u8]]) -> Vec<u8> {
+    "PONG".as_bytes().to_owned()
+  }
+  fn timeout(&self) { }
+}
 
-command!(Get, "GET", 3,
-  {
+command!(Get, "GET", 3)
+
+impl Command for Get {
+  fn execute(&self, args: &[&[u8]]) -> Vec<u8> {
     let subargs_str = args[0];
-    let subargs: ~[&[u8]] = subargs_str.split(|ch| ch == &('/' as u8)).collect();
-    let queue_name = subargs[0];
+    let subargs : Vec<&[u8]> = subargs_str.split(|ch| ch == &('/' as u8)).collect();
+    let queue_name = subargs.get(0);
     let command_args = subargs.tail();
     let result = format!("Command: GET queue: {}, args: {}", queue_name, command_args);
-    result.into_bytes()
-  },
-  {}
-)
+    result.as_bytes().to_owned()
+  }
+  fn timeout(&self) { }
+}
 
-command!(Set, "SET", 3,
-  {
+command!(Set, "SET", 3)
+
+impl Command for Set {
+  fn execute(&self, args: &[&[u8]]) -> Vec<u8> {
     let queue_name = args[0];
     let expiration = args[1];
     let payload = args[2];
     let result = format!("Command: SET queue: {}, expiration: {}, payload: {}", queue_name, expiration, payload);
-    result.into_bytes()
-  },
-  {}
-)
+    result.as_bytes().to_owned()
+  }
+  fn timeout(&self) { }
+}
 
-impl FromStr for ~Command {
-  fn from_str(s: &str) -> Option<~Command> {
-    let mut command = cmd_from_string!(Ping);
-    command = command.or(cmd_from_string!(Hoge));
-    command = command.or(cmd_from_string!(Get));
-    command = command.or(cmd_from_string!(Set));
+impl FromStr for Box<Command> {
+  fn from_str(s: &str) -> Option<Box<Command>> {
+    let trimmed = s.trim();
+    let mut command = cmd_from_string!(Ping, trimmed);
+    command = command.or(cmd_from_string!(Get, trimmed));
+    command = command.or(cmd_from_string!(Set, trimmed));
     command
   }
 }
