@@ -1,0 +1,17 @@
+[package]
+
+name = "drossel"
+version = "0.1.0"
+authors = [ "florian.gilcher@asquera.de" ]
+
+[dependencies.strand]
+
+git = "https://github.com/skade/strand.git"
+
+[dependencies.leveldb]
+
+git = "https://github.com/skade/leveldb.git"
+
+[[bin]]
+
+name = "drossel"
