@@ -2,7 +2,11 @@
 #![feature(globs,phase,macro_rules)]
 //#![phase(syntax, link)] extern crate log;
 
+extern crate strand;
+
 use std::from_str::FromStr;
+
+pub mod drossel;
 
 macro_rules! command(
   ($com:ident, $str:expr, $len:expr) => ( // invoke it like `(input_5 SpecialE)`
