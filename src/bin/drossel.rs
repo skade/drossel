@@ -31,7 +31,7 @@ fn main() {
           let mut buffer = BufferedStream::new(conn);
           let input = buffer.read_until('\n' as u8).unwrap();
           let split_input: Vec<&[u8]> = input.as_slice().split(|ch| ch == &(' ' as u8) || ch == &('\n' as u8)).collect();
-          let cmd = from_utf8(*split_input.get(0)).unwrap();
+          let cmd = from_utf8(split_input[0]).unwrap();
 
           let command: Box<Command> = from_str(cmd).unwrap();
           buffer.write(command.execute(split_input.tail()).as_slice());

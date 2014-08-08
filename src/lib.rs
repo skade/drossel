@@ -46,7 +46,7 @@ command!(Ping, "PING", 4)
 
 impl Command for Ping {
   fn execute(&self, _args: &[&[u8]]) -> Vec<u8> {
-    "PONG".as_bytes().to_owned()
+    "PONG".as_bytes().to_vec()
   }
   fn timeout(&self) { }
 }
@@ -57,10 +57,10 @@ impl Command for Get {
   fn execute(&self, args: &[&[u8]]) -> Vec<u8> {
     let subargs_str = args[0];
     let subargs : Vec<&[u8]> = subargs_str.split(|ch| ch == &('/' as u8)).collect();
-    let queue_name = subargs.get(0);
+    let queue_name = subargs[0];
     let command_args = subargs.tail();
     let result = format!("Command: GET queue: {}, args: {}", queue_name, command_args);
-    result.as_bytes().to_owned()
+    result.as_bytes().to_vec()
   }
   fn timeout(&self) { }
 }
@@ -73,7 +73,7 @@ impl Command for Set {
     let expiration = args[1];
     let payload = args[2];
     let result = format!("Command: SET queue: {}, expiration: {}, payload: {}", queue_name, expiration, payload);
-    result.as_bytes().to_owned()
+    result.as_bytes().to_vec()
   }
   fn timeout(&self) { }
 }

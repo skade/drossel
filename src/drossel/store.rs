@@ -35,7 +35,7 @@ impl Event<BinaryList> for Insert {
   }
 
   fn action(&self, state: &mut BinaryList) -> Result<(), Errors> {
-    state.push_back(self.binary.clone());
+    state.push(self.binary.clone());
     Ok(())
   }
 
