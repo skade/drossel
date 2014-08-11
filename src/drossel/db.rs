@@ -6,7 +6,7 @@ pub struct DB {
 }
 
 impl DB {
-  fn new() -> DB {
+  pub fn new() -> DB {
     DB { queue: Queue { state: DList::new() } }
   }
 }
