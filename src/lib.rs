@@ -5,33 +5,9 @@
 extern crate strand;
 
 use std::from_str::FromStr;
+use std::str::from_utf8;
 
 pub mod drossel;
-
-macro_rules! command(
-  ($com:ident, $str:expr, $len:expr) => ( // invoke it like `(input_5 SpecialE)`
-    pub struct $com;
-
-    impl FromStr for Box<$com> {
-      fn from_str(s: &str) -> Option<Box<$com>> {
-        if s == $str {
-          Some(box $com)
-        } else {
-          None
-        }
-      }
-    }
-  );
-)
-
-macro_rules! cmd_from_string(
-  ($com:ident, $var:expr) => (
-    match from_str::<Box<$com>>($var) {
-      Some(cmd) => { return Some(cmd as Box<Command>) },
-      None => { None }
-    };
-  );
-)
 
 pub trait Command {
   fn execute(&self, args: &[&[u8]]) -> Vec<u8>;
@@ -42,7 +18,7 @@ pub trait AcknowledgeableCommand {
   fn acknowledge(&self);
 }
 
-command!(Ping, "PING", 4)
+pub struct Ping;
 
 impl Command for Ping {
   fn execute(&self, _args: &[&[u8]]) -> Vec<u8> {
@@ -51,7 +27,9 @@ impl Command for Ping {
   fn timeout(&self) { }
 }
 
-command!(Get, "GET", 3)
+pub struct Get {
+  queue_name: String
+}
 
 impl Command for Get {
   fn execute(&self, args: &[&[u8]]) -> Vec<u8> {
@@ -65,7 +43,10 @@ impl Command for Get {
   fn timeout(&self) { }
 }
 
-command!(Set, "SET", 3)
+pub struct Set{
+  queue_name: String,
+  payload: Vec<u8>
+}
 
 impl Command for Set {
   fn execute(&self, args: &[&[u8]]) -> Vec<u8> {
@@ -78,12 +59,21 @@ impl Command for Set {
   fn timeout(&self) { }
 }
 
-impl FromStr for Box<Command> {
-  fn from_str(s: &str) -> Option<Box<Command>> {
-    let trimmed = s.trim();
-    let mut command = cmd_from_string!(Ping, trimmed);
-    command = command.or(cmd_from_string!(Get, trimmed));
-    command = command.or(cmd_from_string!(Set, trimmed));
-    command
+pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
+  let split_input: Vec<&[u8]> = message.as_slice().split(|ch| ch == &(' ' as u8) || ch == &('\n' as u8)).collect();
+  match from_utf8(split_input[0]).unwrap().trim() {
+    "PING" => { Some(box Ping as Box<Command>) },
+    "GET"  => {
+      let get = Get { queue_name: from_utf8(split_input[1]).unwrap().to_string() };
+      Some(box get as Box<Command>)
+    },
+    "SET"  => {
+      let set = Set {
+                      queue_name: from_utf8(split_input[1]).unwrap().to_string(),
+                      payload: split_input[2].to_vec()
+                    };
+      Some(box set as Box<Command>)
+    },
+    _ => { None }
   }
 }

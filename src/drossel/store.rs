@@ -8,8 +8,8 @@ use std::collections::Deque;
 
 pub type BinaryList = DList<Vec<u8>>;
 
-struct Queue {
-  state: BinaryList,
+pub struct Queue {
+  pub state: BinaryList,
 }
 
 impl strand::Strand<BinaryList> for Queue {
