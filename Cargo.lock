@@ -1,0 +1,18 @@
+[root]
+name = "drossel"
+version = "0.1.0"
+dependencies = [
+ "leveldb 0.1.0 (git+https://github.com/skade/leveldb.git#0e7b74909e7666db33c734251670551770f7da68)",
+ "strand 0.1.0 (git+file:///Users/skade/Code/rust/strain#29cf08270e0e9e657df1761fa7ba1246bc0210e2)",
+]
+
+[[package]]
+name = "leveldb"
+version = "0.1.0"
+source = "git+https://github.com/skade/leveldb.git#0e7b74909e7666db33c734251670551770f7da68"
+
+[[package]]
+name = "strand"
+version = "0.1.0"
+source = "git+file:///Users/skade/Code/rust/strain#29cf08270e0e9e657df1761fa7ba1246bc0210e2"
+

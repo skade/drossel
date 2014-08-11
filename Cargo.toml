@@ -6,7 +6,8 @@ authors = [ "florian.gilcher@asquera.de" ]
 
 [dependencies.strand]
 
-git = "https://github.com/skade/strand.git"
+#git = "https://github.com/skade/strand.git"
+git = "file:///Users/skade/Code/rust/strain"
 
 [dependencies.leveldb]
 
@@ -16,6 +17,6 @@ git = "https://github.com/skade/leveldb.git"
 
 name = "drossel"
 
-[[bin]]
-
-name = "drossel"
+#[[bin]]
+#
+#name = "drossel-server"
