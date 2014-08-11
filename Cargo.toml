@@ -9,9 +9,9 @@ authors = [ "florian.gilcher@asquera.de" ]
 #git = "https://github.com/skade/strand.git"
 git = "file:///Users/skade/Code/rust/strain"
 
-[dependencies.leveldb]
-
-git = "https://github.com/skade/leveldb.git"
+#[dependencies.leveldb]
+#
+#git = "https://github.com/skade/leveldb.git"
 
 [[lib]]
 
