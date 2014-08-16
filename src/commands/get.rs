@@ -7,8 +7,8 @@ impl Get {
     Get { queue_name: queue_name }
   }
 
-  pub fn queue_name(self) -> String {
-    self.queue_name
+  pub fn queue_name(&self) -> &String {
+    &self.queue_name
   }
 }
 

@@ -14,6 +14,13 @@ use commands::get;
 use commands::set;
 use commands::command::*;
 
+#[deriving(PartialEq)]
+pub enum DBResult {
+  Pong,
+  Inserted(String, String),
+  Removed(String, Option<Vec<u8>>)
+}
+
 pub struct DB {
   queue: Queue
 }
@@ -23,7 +30,7 @@ impl DB {
     DB { queue: Queue { state: DList::new() } }
   }
 
-  pub fn execute(&mut self, effect: &Event<BinaryList,&'static str>) -> Result<&'static str, Errors> {
+  pub fn execute(&mut self, effect: &Event<BinaryList,DBResult>) -> Result<DBResult, Errors> {
     self.queue.evolve(effect)
   }
 
@@ -32,13 +39,13 @@ impl DB {
   }
 }
 
-impl Event<BinaryList, &'static str> for ping::Ping {
+impl Event<BinaryList, DBResult> for ping::Ping {
   fn precondition(&self, _: &BinaryList) -> Result<(), Errors> {
     Ok(())
   }
 
-  fn action(&self, state: &mut BinaryList) -> Result<&'static str, Errors> {
-    Ok("PONG")
+  fn action(&self, state: &mut BinaryList) -> Result<DBResult, Errors> {
+    Ok(Pong)
   }
 
   fn postcondition(&self, _: &BinaryList) -> Result<(), Errors> {
@@ -46,14 +53,14 @@ impl Event<BinaryList, &'static str> for ping::Ping {
   }
 }
 
-impl Event<BinaryList, &'static str> for get::Get {
+impl Event<BinaryList, DBResult> for get::Get {
   fn precondition(&self, _: &BinaryList) -> Result<(), Errors> {
     Ok(())
   }
 
-  fn action(&self, state: &mut BinaryList) -> Result<&'static str, Errors> {
-    state.pop_front();
-    Ok("GET")
+  fn action(&self, state: &mut BinaryList) -> Result<DBResult, Errors> {
+    let res = state.pop_front();
+    Ok(Removed(self.queue_name().clone(), res))
   }
 
   fn postcondition(&self, _: &BinaryList) -> Result<(), Errors> {
@@ -61,14 +68,14 @@ impl Event<BinaryList, &'static str> for get::Get {
   }
 }
 
-impl Event<BinaryList, &'static str> for set::Set {
+impl Event<BinaryList, DBResult> for set::Set {
   fn precondition(&self, _: &BinaryList) -> Result<(), Errors> {
     Ok(())
   }
 
-  fn action(&self, state: &mut BinaryList) -> Result<&'static str, Errors> {
+  fn action(&self, state: &mut BinaryList) -> Result<DBResult, Errors> {
     state.push(self.payload().clone());
-    Ok("SET")
+    Ok(Inserted(self.queue_name().clone(), self.expiration().clone()))
   }
 
   fn postcondition(&self, _: &BinaryList) -> Result<(), Errors> {
@@ -76,12 +83,12 @@ impl Event<BinaryList, &'static str> for set::Set {
   }
 }
 
-impl AsEvent<BinaryList, &'static str> for Command {
-  fn as_event<'a>(self, fun: |a: &Event<BinaryList, &'static str>| -> Result<&'static str, Errors>) -> Result<&'static str, Errors> {
+impl AsEvent<BinaryList, DBResult> for Command {
+  fn as_event<'a>(self, fun: |a: &Event<BinaryList, DBResult>| -> Result<DBResult, Errors>) -> Result<DBResult, Errors> {
     match self {
-      Ping(p) => fun(&p as &Event<BinaryList, &'static str>),
-      Get(g) => fun(&g as &Event<BinaryList, &'static str>),
-      Set(s) => fun(&s as &Event<BinaryList, &'static str>),
+      Ping(p) => fun(&p as &Event<BinaryList, DBResult>),
+      Get(g) => fun(&g as &Event<BinaryList, DBResult>),
+      Set(s) => fun(&s as &Event<BinaryList, DBResult>),
     }
   }
 }
@@ -107,7 +114,7 @@ mod tests {
     let res = (*command).as_event(|event| {
       db.execute(event)
     });
-    assert_eq!("PONG", res.unwrap())
+    assert_eq!(Pong, res.unwrap())
   }
 
   #[test]
