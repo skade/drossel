@@ -6,6 +6,7 @@ use strand::mutable::Event;
 use strand::strand::Mutable;
 use strand::strand;
 use strand::errors::{Errors};
+use std::collections::Deque;
 
 use drossel::events::{AsEvent};
 use commands::ping;
@@ -24,6 +25,10 @@ impl DB {
 
   pub fn execute(&mut self, effect: &Event<BinaryList,&'static str>) -> Result<&'static str, Errors> {
     self.queue.evolve(effect)
+  }
+
+  pub fn items(&self) -> uint {
+    self.queue.state.len()
   }
 }
 
@@ -47,6 +52,7 @@ impl Event<BinaryList, &'static str> for get::Get {
   }
 
   fn action(&self, state: &mut BinaryList) -> Result<&'static str, Errors> {
+    state.pop_front();
     Ok("GET")
   }
 
@@ -61,6 +67,7 @@ impl Event<BinaryList, &'static str> for set::Set {
   }
 
   fn action(&self, state: &mut BinaryList) -> Result<&'static str, Errors> {
+    state.push(self.payload().clone());
     Ok("SET")
   }
 
@@ -93,6 +100,7 @@ mod tests {
   use strand::strand;
   use strand::errors::{Errors};
 
+  #[test]
   fn test_db_ping() {
     let command = get_command("PING".as_bytes().to_vec()).unwrap();
     let mut db = box DB::new();
@@ -100,5 +108,29 @@ mod tests {
       db.execute(event)
     });
     assert_eq!("PONG", res.unwrap())
+  }
+
+  #[test]
+  fn test_db_set() {
+    let command = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
+    let mut db = box DB::new();
+    let res = (*command).as_event(|event| {
+      db.execute(event)
+    });
+    assert_eq!(1, db.items())
+  }
+
+  #[test]
+  fn test_db_get() {
+    let set = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
+    let mut db = box DB::new();
+    let res = (*set).as_event(|event| {
+      db.execute(event)
+    });
+    let get = get_command("GET test_queue".as_bytes().to_vec()).unwrap();
+    let res = (*get).as_event(|event| {
+      db.execute(event)
+    });
+    assert_eq!(0, db.items())
   }
 }

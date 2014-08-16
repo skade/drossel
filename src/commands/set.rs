@@ -11,16 +11,16 @@ impl Set {
     Set { queue_name: queue_name, expiration: expiration, payload: payload }
   }
 
-  pub fn queue_name(self) -> String {
-    self.queue_name
+  pub fn queue_name(&self) -> &String {
+    &self.queue_name
   }
 
-  pub fn expiration(self) -> String {
-    self.expiration
+  pub fn expiration(&self) -> &String {
+    &self.expiration
   }
 
-  pub fn payload(self) -> Vec<u8> {
-    self.payload
+  pub fn payload(&self) -> &Vec<u8> {
+    &self.payload
   }
 }
 
