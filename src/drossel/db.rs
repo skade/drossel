@@ -14,7 +14,7 @@ use commands::get;
 use commands::set;
 use commands::command::*;
 
-#[deriving(PartialEq)]
+#[deriving(PartialEq,Show)]
 pub enum DBResult {
   Pong,
   Inserted(String, String),
