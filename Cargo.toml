@@ -6,7 +6,8 @@ authors = [ "florian.gilcher@asquera.de" ]
 
 [dependencies.strand]
 
-git = "https://github.com/skade/strand.git"
+#git = "https://github.com/skade/strand.git"
+git = "file:///Users/skade/Code/rust/strain"
 
 #[dependencies.leveldb]
 #
