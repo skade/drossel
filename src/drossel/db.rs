@@ -84,11 +84,11 @@ impl Event<BinaryList, DBResult> for set::Set {
 }
 
 impl AsEvent<BinaryList, DBResult> for Command {
-  fn as_event<'a>(self, fun: |a: &Event<BinaryList, DBResult>| -> Result<DBResult, Errors>) -> Result<DBResult, Errors> {
+  fn as_event<R>(self, fun: |a: Box<Event<BinaryList, DBResult>>| -> R) -> R {
     match self {
-      Ping(p) => fun(&p as &Event<BinaryList, DBResult>),
-      Get(g) => fun(&g as &Event<BinaryList, DBResult>),
-      Set(s) => fun(&s as &Event<BinaryList, DBResult>),
+      Ping(p) => fun(box p as Box<Event<BinaryList, DBResult>>),
+      Get(g) => fun(box g as Box<Event<BinaryList, DBResult>>),
+      Set(s) => fun(box s as Box<Event<BinaryList, DBResult>>),
     }
   }
 }
