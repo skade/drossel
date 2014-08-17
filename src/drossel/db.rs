@@ -93,7 +93,7 @@ impl AsSendableEvent<BinaryList, DBResult> for Command {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use drossel::db::{DB,Pong};
   use strand::mutable::{AsSendableEvent};
   use commands::util::get_command;
 
@@ -108,7 +108,7 @@ mod tests {
 
   #[test]
   fn test_db_set() {
-    let command = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
+    let command = get_command("SET test_queue test_string".as_bytes().to_vec()).unwrap();
     let mut db = DB::new();
     let event = (*command).as_sendable_event();
     let res = db.execute(event);
