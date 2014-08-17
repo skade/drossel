@@ -8,6 +8,7 @@ use std::collections::Deque;
 
 pub type BinaryList = DList<Vec<u8>>;
 
+#[deriving(Send)]
 pub struct Queue {
   pub state: BinaryList,
 }
