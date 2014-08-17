@@ -17,7 +17,7 @@ use commands::command::*;
 #[deriving(PartialEq,Show,Send)]
 pub enum DBResult {
   Pong,
-  Inserted(String, String),
+  Inserted(String),
   Removed(String, Option<Vec<u8>>)
 }
 
@@ -75,7 +75,7 @@ impl Event<BinaryList, DBResult> for set::Set {
 
   fn action(&self, state: &mut BinaryList) -> Result<DBResult, Errors> {
     state.push(self.payload().clone());
-    Ok(Inserted(self.queue_name().clone(), self.expiration().clone()))
+    Ok(Inserted(self.queue_name().clone()))
   }
 
   fn postcondition(&self, _: &BinaryList) -> Result<(), Errors> {

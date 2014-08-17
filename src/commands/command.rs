@@ -17,11 +17,3 @@ impl Command {
     }
   }
 }
-//pub trait Command {
-//  fn execute(&self) -> Vec<u8>;
-//  fn timeout(&self);
-//}
-//
-//pub trait AcknowledgeableCommand {
-//  fn acknowledge(&self);
-//}

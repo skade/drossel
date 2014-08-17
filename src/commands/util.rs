@@ -16,8 +16,7 @@ pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
     "SET"  => {
       let set = set::Set::new(
         from_utf8(split_input[1]).unwrap().to_string(),
-        from_utf8(split_input[2]).unwrap().to_string(),
-        split_input[3].to_vec()
+        split_input[2].to_vec()
       );
       Some(box Set(set))
     },
@@ -43,7 +42,7 @@ mod tests {
 
   #[test]
   fn test_set() {
-    let command = get_command("SET test_queue 0 FOO".as_bytes().to_vec());
+    let command = get_command("SET test_queue FOO".as_bytes().to_vec());
     assert_eq!("SET", command.unwrap().name())
   }
 }
