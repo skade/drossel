@@ -2,13 +2,12 @@ use super::store::*;
 use std::collections::dlist::DList;
 use super::super::*;
 use strand::mutable::Strand;
-use strand::mutable::Event;
+use strand::mutable::{Event,AsSendableEvent};
 use strand::strand::Mutable;
 use strand::strand;
 use strand::errors::{Errors};
 use std::collections::Deque;
 
-use drossel::events::{AsEvent};
 use commands::ping;
 use commands::get;
 use commands::set;
@@ -83,20 +82,12 @@ impl Event<BinaryList, DBResult> for set::Set {
   }
 }
 
-impl AsEvent<BinaryList, DBResult> for Command {
-  fn as_event<R>(self, fun: |a: Box<Event<BinaryList, DBResult>>| -> R) -> R {
+impl AsSendableEvent<BinaryList, DBResult> for Command {
+  fn as_sendable_event(self) -> Box<Event<BinaryList, DBResult>+Send> {
     match self {
-      Ping(p) => fun(box p as Box<Event<BinaryList, DBResult>>),
-      Get(g) => fun(box g as Box<Event<BinaryList, DBResult>>),
-      Set(s) => fun(box s as Box<Event<BinaryList, DBResult>>),
-    }
-  }
-
-  fn as_sendable_event<R>(self, fun: |a: Box<Event<BinaryList, DBResult>+Send>| -> R) -> R {
-    match self {
-      Ping(p) => fun(box p as Box<Event<BinaryList, DBResult>+Send>),
-      Get(g) => fun(box g as Box<Event<BinaryList, DBResult>+Send>),
-      Set(s) => fun(box s as Box<Event<BinaryList, DBResult>+Send>),
+      Ping(p) => box p as Box<Event<BinaryList, DBResult>+Send>,
+      Get(g) => box g as Box<Event<BinaryList, DBResult>+Send>,
+      Set(s) => box s as Box<Event<BinaryList, DBResult>+Send>,
     }
   }
 }
