@@ -1,5 +1,3 @@
-use super::command::Command;
-
 pub struct Set{
   queue_name: String,
   payload: Vec<u8>

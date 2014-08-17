@@ -1,10 +1,8 @@
 use super::store::*;
 use std::collections::dlist::DList;
-use super::super::*;
 use strand::mutable::Strand;
 use strand::mutable::{Event,AsSendableEvent};
 use strand::strand::Mutable;
-use strand::strand;
 use strand::errors::{Errors};
 use std::collections::Deque;
 
@@ -43,7 +41,7 @@ impl Event<BinaryList, DBResult> for ping::Ping {
     Ok(())
   }
 
-  fn action(&self, state: &mut BinaryList) -> Result<DBResult, Errors> {
+  fn action(&self, _: &mut BinaryList) -> Result<DBResult, Errors> {
     Ok(Pong)
   }
 
