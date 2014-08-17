@@ -91,6 +91,14 @@ impl AsEvent<BinaryList, DBResult> for Command {
       Set(s) => fun(box s as Box<Event<BinaryList, DBResult>>),
     }
   }
+
+  fn as_sendable_event<R>(self, fun: |a: Box<Event<BinaryList, DBResult>+Send>| -> R) -> R {
+    match self {
+      Ping(p) => fun(box p as Box<Event<BinaryList, DBResult>+Send>),
+      Get(g) => fun(box g as Box<Event<BinaryList, DBResult>+Send>),
+      Set(s) => fun(box s as Box<Event<BinaryList, DBResult>+Send>),
+    }
+  }
 }
 
 
