@@ -2,11 +2,11 @@
 name = "drossel"
 version = "0.1.0"
 dependencies = [
- "strand 0.1.0 (git+https://github.com/skade/strand.git#08c4306a47936bca1e82c2f855bb9219b0fd7838)",
+ "strand 0.1.0 (git+https://github.com/skade/strand.git#1e31eb38fef06e0a0a002372dac1934c081b1e78)",
 ]
 
 [[package]]
 name = "strand"
 version = "0.1.0"
-source = "git+https://github.com/skade/strand.git#08c4306a47936bca1e82c2f855bb9219b0fd7838"
+source = "git+https://github.com/skade/strand.git#1e31eb38fef06e0a0a002372dac1934c081b1e78"
 

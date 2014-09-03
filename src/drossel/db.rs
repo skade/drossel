@@ -28,14 +28,14 @@ impl DB {
 mod tests {
   use drossel::db::{DB};
   use drossel::types::*;
-  use strand::mutable::{AsSendableEvent};
+  use strand::mutable::{AsEvent};
   use commands::util::get_command;
 
   #[test]
   fn test_db_ping() {
     let command = get_command("PING".as_bytes().to_vec()).unwrap();
     let mut db = DB::new();
-    let event = (*command).as_sendable_event();
+    let event = (*command).as_event();
     let res = db.execute(event);
     assert_eq!(Pong, res.unwrap())
   }
@@ -44,7 +44,7 @@ mod tests {
   fn test_db_set() {
     let command = get_command("SET test_queue test_string".as_bytes().to_vec()).unwrap();
     let mut db = DB::new();
-    let event = (*command).as_sendable_event();
+    let event = (*command).as_event();
     let res = db.execute(event);
     assert!(res.is_ok());
     assert_eq!(1, db.items())
@@ -54,10 +54,10 @@ mod tests {
   fn test_db_get() {
     let set = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
     let mut db = DB::new();
-    let event1 = (*set).as_sendable_event();
+    let event1 = (*set).as_event();
     assert!(db.execute(event1).is_ok());
     let get = get_command("GET test_queue".as_bytes().to_vec()).unwrap();
-    let event2 = (*get).as_sendable_event();
+    let event2 = (*get).as_event();
     assert!(db.execute(event2).is_ok());
     assert_eq!(0, db.items())
   }

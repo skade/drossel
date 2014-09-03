@@ -1,5 +1,5 @@
 use super::store::*;
-use strand::mutable::{Event,AsSendableEvent};
+use strand::mutable::{Event,AsEvent};
 use strand::errors::{Errors};
 use drossel::types::*;
 use commands::ping;
@@ -53,8 +53,8 @@ impl Event<BinaryList, DBResult> for set::Set {
   }
 }
 
-impl AsSendableEvent<BinaryList, DBResult> for Command {
-  fn as_sendable_event(self) -> Box<Event<BinaryList, DBResult>+Send> {
+impl AsEvent<BinaryList, DBResult> for Command {
+  fn as_event(self) -> Box<Event<BinaryList, DBResult>+Send> {
     match self {
       Ping(p) => box p as Box<Event<BinaryList, DBResult>+Send>,
       Get(g) => box g as Box<Event<BinaryList, DBResult>+Send>,

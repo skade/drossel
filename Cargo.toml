@@ -12,7 +12,7 @@ git = "https://github.com/skade/strand.git"
 #
 #git = "https://github.com/skade/leveldb.git"
 
-[[lib]]
+[lib]
 
 name = "drossel"
 
