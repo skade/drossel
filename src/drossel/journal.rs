@@ -22,13 +22,15 @@ impl Key {
     Key { keytype: keytype, id: id }
   }
 
-  pub fn from_u8(key: [u8, ..16]) -> Key {
+  pub fn from_u8(key: &[u8]) -> &Key {
     use std::mem::transmute;
 
-    unsafe { transmute::<[u8, ..16],_>(key) }
+    assert!(key.len() == 16)
+
+    unsafe { transmute(key.as_ptr()) }
   }
 
-  pub fn as_slice<T>(self, f: |v: [u8, ..16]| -> T) -> T {
+  pub fn as_slice<T>(self, f: |v: &[u8]| -> T) -> T {
     use std::mem::transmute;
 
     unsafe { f(transmute::<_, [u8, ..16]>(self)) }
