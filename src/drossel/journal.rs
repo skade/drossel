@@ -58,7 +58,7 @@ impl Key {
   }
 }
 
-struct Journal {
+pub struct Journal {
   db: Database,
   queue_head: Key,
   queue_tail: Key,
