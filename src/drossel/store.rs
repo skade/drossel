@@ -1,23 +1,21 @@
 use strand::mutable::Strand;
 use strand::strand::Mutable;
 use strand::strand;
-use std::collections::dlist::DList;
-
-pub type BinaryList = DList<Vec<u8>>;
+use drossel::journal::Journal;
 
 #[deriving(Send)]
 pub struct Queue {
-  pub state: BinaryList,
+  pub state: Journal,
 }
 
-impl strand::Strand<BinaryList> for Queue {
-  fn new(state: BinaryList) -> Queue {
+impl strand::Strand<Journal> for Queue {
+  fn new(state: Journal) -> Queue {
     Queue { state: state }
   }
 }
 
-impl Mutable<BinaryList> for Queue {
-  fn state<'a>(&'a mut self) -> &'a mut BinaryList {
+impl Mutable<Journal> for Queue {
+  fn state<'a>(&'a mut self) -> &'a mut Journal {
     &mut self.state
   }
 }

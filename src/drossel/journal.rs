@@ -100,6 +100,10 @@ impl Journal {
       None
     }
   }
+
+  pub fn len(&self) -> u64 {
+    self.queue_head.id - self.queue_tail.id
+  }
 }
 
 #[cfg(test)]

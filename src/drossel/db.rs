@@ -1,5 +1,5 @@
-use super::store::*;
-use std::collections::dlist::DList;
+use drossel::store::*;
+use drossel::journal::*;
 use strand::mutable::Strand;
 use strand::mutable::{Event};
 use strand::strand::Mutable;
@@ -12,15 +12,16 @@ pub struct DB {
 
 impl DB {
   pub fn new() -> DB {
-    DB { queue: Queue { state: DList::new() } }
+    let path = Path::new("test");
+    DB { queue: Queue { state: Journal::new(path) } }
   }
 
-  pub fn execute(&mut self, effect: &Event<BinaryList,DBResult>) -> Result<DBResult, Errors> {
+  pub fn execute(&mut self, effect: &Event<Journal,DBResult>) -> Result<DBResult, Errors> {
     self.queue.evolve(effect)
   }
 
   pub fn items(&self) -> uint {
-    self.queue.state.len()
+    self.queue.state.len() as uint
   }
 }
 
