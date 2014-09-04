@@ -11,8 +11,7 @@ pub struct DB {
 }
 
 impl DB {
-  pub fn new() -> DB {
-    let path = Path::new("test");
+  pub fn new(path: Path) -> DB {
     DB { queue: Queue { state: Journal::new(path) } }
   }
 
@@ -31,11 +30,13 @@ mod tests {
   use drossel::types::*;
   use strand::mutable::{AsEvent};
   use commands::util::get_command;
+  use std::io::TempDir;
 
   #[test]
   fn test_db_ping() {
+    let dir = TempDir::new("db_test").unwrap();
     let command = get_command("PING".as_bytes().to_vec()).unwrap();
-    let mut db = DB::new();
+    let mut db = DB::new(dir.path().join("ping"));
     let event = (*command).as_event();
     let res = db.execute(event);
     assert_eq!(Pong, res.unwrap())
@@ -43,8 +44,9 @@ mod tests {
 
   #[test]
   fn test_db_set() {
+    let dir = TempDir::new("db_test").unwrap();
     let command = get_command("SET test_queue test_string".as_bytes().to_vec()).unwrap();
-    let mut db = DB::new();
+    let mut db = DB::new(dir.path().join("set"));
     let event = (*command).as_event();
     let res = db.execute(event);
     assert!(res.is_ok());
@@ -53,8 +55,9 @@ mod tests {
 
   #[test]
   fn test_db_get() {
+    let dir = TempDir::new("db_test").unwrap();
     let set = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
-    let mut db = DB::new();
+    let mut db = DB::new(dir.path().join("get"));
     let event1 = (*set).as_event();
     assert!(db.execute(event1).is_ok());
     let get = get_command("GET test_queue".as_bytes().to_vec()).unwrap();
