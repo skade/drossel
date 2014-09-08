@@ -11,13 +11,18 @@ pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
   match from_utf8(split_input[0]).unwrap().trim() {
     "PING" => { Some(box Ping(ping::Ping)) },
     "GET"  => {
+      let split_params: Vec<&[u8]> = split_input[1].split(|ch| ch == &('/' as u8)).collect();
+      let open = split_params.iter().any(|a| from_utf8(*a) == Some("open"));
+      let close = split_params.iter().any(|a| from_utf8(*a) == Some("cloe"));
+      let abort = split_params.iter().any(|a| from_utf8(*a) == Some("abort"));
+      let peek = split_params.iter().any(|a| from_utf8(*a) == Some("peek"));
       let get = get::Get::new(
-        from_utf8(split_input[1]).unwrap().to_string(),
+        from_utf8(split_params[0]).unwrap().to_string(),
         None,
-        false,
-        false,
-        false,
-        false
+        open,
+        close,
+        abort,
+        peek
       );
       Some(box Get(get))
     },
