@@ -53,6 +53,8 @@ impl Key {
   pub fn from_u8(key: &[u8]) -> &Key {
     use std::mem::transmute;
 
+    println!("{}", key.len())
+    println!("{}", key)
     assert!(key.len() == 16)
 
     unsafe { transmute(key.as_ptr()) }
