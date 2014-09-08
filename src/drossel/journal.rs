@@ -197,21 +197,21 @@ mod tests {
     let key = Key { keytype: Queue, id: 123 };
     let key2 = Key { keytype: Chunk, id: 123 };
     let key3 = Key { keytype: Queue, id: 124 };
-    assert_eq!(-1, key.compare(&key2));
-    assert_eq!(1, key2.compare(&key));
-    assert_eq!(-1, key.compare(&key3));
-    assert_eq!(1, key3.compare(&key));
-    assert_eq!(0, key.compare(&key));
+    assert_eq!(Less, key.compare(&key2));
+    assert_eq!(Greater, key2.compare(&key));
+    assert_eq!(Less, key.compare(&key3));
+    assert_eq!(Greater, key3.compare(&key));
+    assert_eq!(Equal, key.compare(&key));
   }
 
   #[test]
   fn test_journal() {
     let dir = TempDir::new("journal_test").unwrap();
-    let mut journal = Journal::new(dir.path().join("journal_test"));
+    let mut journal = Journal::open(dir.path().join("journal_test")).unwrap();
     let res = journal.pop();
     assert!(res.is_none());
-    journal.push(&[1]);
-    journal.push(&[2]);
+    journal.push(&[1u8]);
+    journal.push(&[2u8]);
     let res2 = journal.pop();
     assert!(res2.is_some());
     assert_eq!(Some(vec![1 as u8]), res2);

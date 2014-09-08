@@ -38,7 +38,7 @@ mod tests {
     let command = get_command("PING".as_bytes().to_vec()).unwrap();
     let mut db = DB::new(dir.path().join("ping"));
     let event = (*command).as_event();
-    let res = db.execute(event);
+    let res = db.execute(&*event);
     assert_eq!(Pong, res.unwrap())
   }
 
@@ -48,7 +48,7 @@ mod tests {
     let command = get_command("SET test_queue test_string".as_bytes().to_vec()).unwrap();
     let mut db = DB::new(dir.path().join("set"));
     let event = (*command).as_event();
-    let res = db.execute(event);
+    let res = db.execute(&*event);
     assert!(res.is_ok());
     assert_eq!(1, db.items())
   }
@@ -59,10 +59,10 @@ mod tests {
     let set = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
     let mut db = DB::new(dir.path().join("get"));
     let event1 = (*set).as_event();
-    assert!(db.execute(event1).is_ok());
+    assert!(db.execute(&*event1).is_ok());
     let get = get_command("GET test_queue".as_bytes().to_vec()).unwrap();
     let event2 = (*get).as_event();
-    assert!(db.execute(event2).is_ok());
+    assert!(db.execute(&*event2).is_ok());
     assert_eq!(0, db.items())
   }
 }
