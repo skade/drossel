@@ -16,4 +16,19 @@ impl Command {
       Set(_) => "SET"
     }
   }
+
+  pub fn read_more_data(&self) -> Option<uint> {
+    match *self {
+      Ping(_) => None,
+      Set(ref s) => Some(s.length()),
+      Get(_) => None
+    }
+  }
+
+  pub fn set_payload(&mut self, payload: &[u8]) {
+    match *self {
+      Set(ref mut s) => { s.set_payload(payload) },
+      _ => ()
+    }
+  }
 }

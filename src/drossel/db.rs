@@ -45,7 +45,7 @@ mod tests {
   #[test]
   fn test_db_set() {
     let dir = TempDir::new("db_test").unwrap();
-    let command = get_command("SET test_queue test_string".as_bytes().to_vec()).unwrap();
+    let command = get_command("SET test_queue 0 0 24".as_bytes().to_vec()).unwrap();
     let mut db = DB::new(dir.path().join("set"));
     let event = (*command).as_event();
     let res = db.execute(&*event);
@@ -56,7 +56,7 @@ mod tests {
   #[test]
   fn test_db_get() {
     let dir = TempDir::new("db_test").unwrap();
-    let set = get_command("SET test_queue 0 test_string".as_bytes().to_vec()).unwrap();
+    let set = get_command("SET test_queue 0 0 24".as_bytes().to_vec()).unwrap();
     let mut db = DB::new(dir.path().join("get"));
     let event1 = (*set).as_event();
     assert!(db.execute(&*event1).is_ok());

@@ -6,7 +6,7 @@ use super::get;
 use super::set;
 
 pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
-  let split_input: Vec<&[u8]> = message.as_slice().split(|ch| ch == &(' ' as u8) || ch == &('\n' as u8)).collect();
+  let split_input: Vec<&[u8]> = message.as_slice().split(|ch| ch == &(' ' as u8) || ch == &('\n' as u8) || ch == &('\r' as u8)).collect();
   match from_utf8(split_input[0]).unwrap().trim() {
     "PING" => { Some(box Ping(ping::Ping)) },
     "GET"  => {
@@ -16,7 +16,9 @@ pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
     "SET"  => {
       let set = set::Set::new(
         from_utf8(split_input[1]).unwrap().to_string(),
-        split_input[2].to_vec()
+        from_str(from_utf8(split_input[2]).unwrap()).unwrap(),
+        from_str(from_utf8(split_input[3]).unwrap()).unwrap(),
+        from_str(from_utf8(split_input[4]).unwrap()).unwrap()
       );
       Some(box Set(set))
     },
@@ -42,7 +44,7 @@ mod tests {
 
   #[test]
   fn test_set() {
-    let command = get_command("SET test_queue FOO".as_bytes().to_vec());
+    let command = get_command("SET test_queue 0 0 24".as_bytes().to_vec());
     assert_eq!("SET", command.unwrap().name())
   }
 }
