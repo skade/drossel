@@ -87,7 +87,7 @@ pub struct Journal {
 
 impl Journal {
   fn new(path: Path) -> Result<Journal, Error> {
-    let comparator = KeyComparator::new("key_comparator");
+    let comparator = KeyComparator::new("new_comparator");
     let mut options = Options::new();
     options.create_if_missing(true);
     options.set_comparator(box comparator);
@@ -101,7 +101,7 @@ impl Journal {
   }
 
   fn open_existing(path: Path) -> Result<Journal,Error> {
-    let comparator = KeyComparator::new("key_comparator");
+    let comparator = KeyComparator::new("existing_comparator");
     let mut options = Options::new();
     options.create_if_missing(false);
     options.set_comparator(box comparator);
