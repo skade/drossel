@@ -12,7 +12,7 @@ pub struct DB {
 
 impl DB {
   pub fn new(path: Path) -> DB {
-    DB { queue: Queue { state: Journal::new(path) } }
+    DB { queue: Queue { state: Journal::open(path).unwrap() } }
   }
 
   pub fn execute(&mut self, effect: &Event<Journal,DBResult>) -> Result<DBResult, Errors> {

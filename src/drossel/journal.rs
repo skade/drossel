@@ -1,8 +1,11 @@
 use leveldb::database::Database;
 use leveldb::database::binary::Interface;
+use leveldb::database::error::Error;
+use leveldb::database::comparator::Comparator;
+use leveldb::database::iterator::Iterable;
 use leveldb::options::{Options,WriteOptions,ReadOptions};
 
-#[deriving(Show,PartialEq,Eq,PartialOrd,Ord)]
+#[deriving(Show,PartialEq,Eq,PartialOrd,Ord,Clone)]
 #[repr(u64)]
 pub enum KeyType {
   Queue,
@@ -12,10 +15,28 @@ pub enum KeyType {
 #[deriving(Show,PartialEq)]
 pub type Id = u64;
 
-#[deriving(Show,PartialEq)]
+#[deriving(Show,PartialEq,Clone)]
 pub struct Key {
   id: Id,
   keytype: KeyType,
+}
+
+struct KeyComparator<'a> {
+  name: &'a str
+}
+
+impl<'a> KeyComparator<'a> {
+  fn new(name: &'a str) -> KeyComparator<'a> {
+    KeyComparator { name: name }
+  }
+}
+
+impl<'a> Comparator for KeyComparator<'a> {
+  fn name(&self) -> *const u8 { self.name.as_ptr() }
+
+  fn compare(&self, a: &[u8], b: &[u8]) -> Ordering {
+    Key::from_u8(a).compare(Key::from_u8(b))
+  }
 }
 
 impl Key {
@@ -41,20 +62,20 @@ impl Key {
     unsafe { f(transmute::<_, [u8, ..16]>(self)) }
   }
 
-  pub fn compare(&self, other: &Key) -> i32 {
+  pub fn compare(&self, other: &Key) -> Ordering {
     if self.keytype < other.keytype {
-      return -1
+      return Less
     }
     if self.keytype > other.keytype {
-      return 1
+      return Greater
     }
     if self.id < other.id {
-      return -1
+      return Less
     }
     if self.id > other.id {
-      return 1
+      return Greater
     }
-    0
+    Equal
   }
 }
 
@@ -65,13 +86,63 @@ pub struct Journal {
 }
 
 impl Journal {
-  pub fn new(path: Path) -> Journal {
+  fn new(path: Path) -> Result<Journal, Error> {
+    let comparator = KeyComparator::new("key_comparator");
     let mut options = Options::new();
     options.create_if_missing(true);
-    let db = Database::open(path, options).unwrap();
+    options.set_comparator(box comparator);
+    let db = Database::open(path, options);
     let queue_head = Key { keytype: Queue, id: 0 };
     let queue_tail = Key { keytype: Queue, id: 0 };
-    Journal { db: db, queue_head: queue_head, queue_tail: queue_tail }
+    match db {
+      Ok(new) => Ok(Journal { db: new, queue_head: queue_head, queue_tail: queue_tail }),
+      Err(e) => Err(e)
+    }
+  }
+
+  fn open_existing(path: Path) -> Result<Journal,Error> {
+    let comparator = KeyComparator::new("key_comparator");
+    let mut options = Options::new();
+    options.create_if_missing(false);
+    options.set_comparator(box comparator);
+    let db = Database::open(path, options);
+    match db {
+      Ok(mut existing) => {
+        let (head, tail) = Journal::read_keys(&mut existing);
+        Ok(Journal { db: existing, queue_head: head, queue_tail: tail })
+      },
+      Err(e) => Err(e)
+    }
+  }
+
+  fn read_keys(db: &mut Database) -> (Key, Key) {
+    let read_options = ReadOptions::new();
+    let mut iter = db.iter(read_options);
+    if !iter.valid() {
+      // we have a db, but no keys in it
+      let queue_head = Key { keytype: Queue, id: 0 };
+      let queue_tail = Key { keytype: Queue, id: 0 };
+      return (queue_head, queue_tail)
+    }
+    let first = iter.next().unwrap();
+    let head = Key::from_u8(first.as_slice());
+    if !iter.valid() {
+      // we have a db, with only one key. That key is head and tail.
+      return (head.clone(), head.clone())
+    }
+    let last = iter.last().unwrap();
+    let tail = Key::from_u8(last.as_slice());
+    (head.clone(), tail.clone())
+  }
+
+  pub fn open(path: Path) -> Result<Journal,Error> {
+    let res = Journal::open_existing(path.clone());
+    match res {
+      Ok(j) => Ok(j),
+      Err(_) => {
+        Journal::new(path)
+      }
+    }
   }
 
   pub fn push(&mut self, data: &[u8]) {
