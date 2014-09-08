@@ -7,10 +7,18 @@ use super::set;
 
 pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
   let split_input: Vec<&[u8]> = message.as_slice().split(|ch| ch == &(' ' as u8) || ch == &('\n' as u8) || ch == &('\r' as u8)).collect();
+
   match from_utf8(split_input[0]).unwrap().trim() {
     "PING" => { Some(box Ping(ping::Ping)) },
     "GET"  => {
-      let get = get::Get::new(from_utf8(split_input[1]).unwrap().to_string());
+      let get = get::Get::new(
+        from_utf8(split_input[1]).unwrap().to_string(),
+        None,
+        false,
+        false,
+        false,
+        false
+      );
       Some(box Get(get))
     },
     "SET"  => {
