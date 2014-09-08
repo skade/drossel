@@ -2,6 +2,7 @@ use super::ping;
 use super::get;
 use super::set;
 
+#[deriving(Show)]
 pub enum Command {
   Ping(ping::Ping),
   Get(get::Get),

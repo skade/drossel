@@ -1,3 +1,4 @@
+#[deriving(Show)]
 pub struct Set {
   queue_name: String,
   flags: u32,

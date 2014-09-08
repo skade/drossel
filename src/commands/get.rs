@@ -1,3 +1,4 @@
+#[deriving(Show)]
 pub struct Get {
   queue_name: String
 }
