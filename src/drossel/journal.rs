@@ -53,8 +53,6 @@ impl Key {
   pub fn from_u8(key: &[u8]) -> &Key {
     use std::mem::transmute;
 
-    println!("{}", key.len())
-    println!("{}", key)
     assert!(key.len() == 16)
 
     unsafe { transmute(key.as_ptr()) }
@@ -126,13 +124,13 @@ impl Journal {
       let queue_tail = Key { keytype: Queue, id: 0 };
       return (queue_head, queue_tail)
     }
-    let first = iter.next().unwrap();
+    let first = iter.next().unwrap().key();
     let head = Key::from_u8(first.as_slice());
     if !iter.valid() {
       // we have a db, with only one key. That key is head and tail.
       return (head.clone(), head.clone())
     }
-    let last = iter.last().unwrap();
+    let last = iter.last().unwrap().key();
     let tail = Key::from_u8(last.as_slice());
     (head.clone(), tail.clone())
   }
