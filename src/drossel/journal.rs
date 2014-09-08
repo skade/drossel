@@ -5,6 +5,8 @@ use leveldb::database::comparator::Comparator;
 use leveldb::database::iterator::Iterable;
 use leveldb::options::{Options,WriteOptions,ReadOptions};
 
+static comparator: KeyComparator<'static> = KeyComparator { name: "drossel_key_comparator" };
+
 #[deriving(Show,PartialEq,Eq,PartialOrd,Ord,Clone)]
 #[repr(u64)]
 pub enum KeyType {
@@ -25,11 +27,11 @@ struct KeyComparator<'a> {
   name: &'a str
 }
 
-impl<'a> KeyComparator<'a> {
-  fn new(name: &'a str) -> KeyComparator<'a> {
-    KeyComparator { name: name }
-  }
-}
+//impl<'a> KeyComparator<'a> {
+//  fn new(name: &'a str) -> KeyComparator<'a> {
+//    KeyComparator { name: name }
+//  }
+//}
 
 impl<'a> Comparator for KeyComparator<'a> {
   fn name(&self) -> *const u8 { self.name.as_ptr() }
@@ -87,7 +89,6 @@ pub struct Journal {
 
 impl Journal {
   fn new(path: Path) -> Result<Journal, Error> {
-    let comparator = KeyComparator::new("new_comparator");
     let mut options = Options::new();
     options.create_if_missing(true);
     options.set_comparator(box comparator);
@@ -101,7 +102,6 @@ impl Journal {
   }
 
   fn open_existing(path: Path) -> Result<Journal,Error> {
-    let comparator = KeyComparator::new("existing_comparator");
     let mut options = Options::new();
     options.create_if_missing(false);
     options.set_comparator(box comparator);
