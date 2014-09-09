@@ -26,4 +26,24 @@ impl Get {
   pub fn queue_name(&self) -> &String {
     &self.queue_name
   }
+
+  pub fn open(&self) -> bool {
+    self.open
+  }
+
+  pub fn close(&self) -> bool {
+    self.close
+  }
+
+  pub fn abort(&self) -> bool {
+    self.abort
+  }
+
+  pub fn peek(&self) -> bool {
+    self.peek
+  }
+
+  pub fn wait(&self) -> Option<u32> {
+    self.wait
+  }
 }

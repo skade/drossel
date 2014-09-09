@@ -10,8 +10,8 @@ pub enum Command {
 }
 
 impl Command {
-  pub fn name(self) -> &'static str {
-    match self {
+  pub fn name(&self) -> &'static str {
+    match *self {
       Ping(_) => "PING",
       Get(_) => "GET",
       Set(_) => "SET"

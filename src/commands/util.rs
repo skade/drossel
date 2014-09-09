@@ -16,9 +16,17 @@ pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
       let close = split_params.iter().any(|a| from_utf8(*a) == Some("cloe"));
       let abort = split_params.iter().any(|a| from_utf8(*a) == Some("abort"));
       let peek = split_params.iter().any(|a| from_utf8(*a) == Some("peek"));
+      let wait_string = split_params.iter().find(|a| a[0] == 't' as u8 && a[1] == '=' as u8);
+      let wait = match wait_string {
+        Some(string) => {
+          let time = string.split(|ch| ch == &('=' as u8)).last();
+          from_str(from_utf8(time.unwrap()).unwrap())
+        },
+        _ => None
+      };
       let get = get::Get::new(
         from_utf8(split_params[0]).unwrap().to_string(),
-        None,
+        wait,
         open,
         close,
         abort,
@@ -42,6 +50,7 @@ pub fn get_command(message: Vec<u8>) -> Option<Box<Command>> {
 #[cfg(test)]
 mod tests {
   use super::get_command;
+  use super::super::command::{Get};
 
   #[test]
   fn test_ping() {
@@ -51,8 +60,15 @@ mod tests {
 
   #[test]
   fn test_get() {
-    let command = get_command("GET test_queue".as_bytes().to_vec());
-    assert_eq!("GET", command.unwrap().name())
+    let command = get_command("GET test_queue/open/t=100".as_bytes().to_vec()).unwrap();
+    assert_eq!("GET", command.name())
+    match *command {
+      Get(ref g) => {
+        assert!(g.open());
+        assert_eq!(g.wait(), Some(100));
+      },
+      _ => fail!("GET open failed")
+    }
   }
 
   #[test]
