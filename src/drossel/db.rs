@@ -2,17 +2,16 @@ use drossel::store::*;
 use drossel::journal::*;
 use strand::mutable::Strand;
 use strand::mutable::{Event};
-use strand::strand::Mutable;
 use strand::errors::{Errors};
 use drossel::types::DBResult;
 
 pub struct DB {
-  queue: Queue
+  queue: JournaledQueue
 }
 
 impl DB {
   pub fn new(path: Path) -> DB {
-    DB { queue: Queue { state: Journal::open(path).unwrap() } }
+    DB { queue: JournaledQueue { state: Journal::open(path).unwrap() } }
   }
 
   pub fn execute(&mut self, effect: &Event<Journal,DBResult>) -> Result<DBResult, Errors> {
@@ -20,7 +19,7 @@ impl DB {
   }
 
   pub fn items(&self) -> uint {
-    self.queue.state.len() as uint
+    self.queue.len()
   }
 }
 

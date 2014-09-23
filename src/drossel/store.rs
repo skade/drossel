@@ -4,18 +4,24 @@ use strand::strand;
 use drossel::journal::Journal;
 
 #[deriving(Send)]
-pub struct Queue {
+pub struct JournaledQueue {
   pub state: Journal,
 }
 
-impl strand::Strand<Journal> for Queue {
-  fn new(state: Journal) -> Queue {
-    Queue { state: state }
+impl strand::Strand<Journal> for JournaledQueue {
+  fn new(state: Journal) -> JournaledQueue {
+    JournaledQueue { state: state }
   }
 }
 
-impl Mutable<Journal> for Queue {
+impl Mutable<Journal> for JournaledQueue {
   fn state<'a>(&'a mut self) -> &'a mut Journal {
     &mut self.state
+  }
+}
+
+impl JournaledQueue {
+  pub fn len(&self) -> uint {
+    self.state.len() as uint
   }
 }
