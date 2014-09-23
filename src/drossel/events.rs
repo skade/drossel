@@ -27,7 +27,7 @@ impl Event<Journal, DBResult> for get::Get {
   }
 
   fn action(&self, state: &mut Journal) -> Result<DBResult, Errors> {
-    let res = state.pop();
+    let res = state.pop(!self.open());
     Ok(Removed(self.queue_name().clone(), res))
   }
 
