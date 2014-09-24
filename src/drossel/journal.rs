@@ -83,8 +83,9 @@ impl Key {
 
 pub struct Journal {
   db: Database,
-  queue_head: Key,
-  queue_tail: Key,
+  head: Key, // The key that points to the last value written
+  tail: Key, // The key that points to the earliest value written, but not read
+  reserved_tail: Key // The key that points to the beginning of the reserved block
 }
 
 impl Journal {
@@ -93,51 +94,48 @@ impl Journal {
     options.create_if_missing(true);
     options.set_comparator(box comparator);
     let db = Database::open(path, options);
-    let queue_head = Key { keytype: Queue, id: 0 };
-    let queue_tail = Key { keytype: Queue, id: 0 };
+    let head = Key { keytype: Queue, id: 0 };
+    let tail = Key { keytype: Queue, id: 0 };
+    let reserved_tail = Key { keytype: Queue, id: 0 };
     match db {
-      Ok(new) => Ok(Journal { db: new, queue_head: queue_head, queue_tail: queue_tail }),
+      Ok(new) => Ok(Journal { db: new, head: head, tail: tail, reserved_tail: reserved_tail }),
       Err(e) => Err(e)
     }
   }
 
   fn open_existing(path: Path) -> Result<Journal,Error> {
-    println!("opening existing database");
     let mut options = Options::new();
     options.create_if_missing(false);
     options.set_comparator(box comparator);
     let db = Database::open(path, options);
     match db {
       Ok(mut existing) => {
-        let (head, tail) = Journal::read_keys(&mut existing);
-        println!("keys: {} {}", head, tail);
-        Ok(Journal { db: existing, queue_head: head, queue_tail: tail })
+        let (head, tail, reserved_tail) = Journal::read_keys(&mut existing);
+        Ok(Journal { db: existing, head: head, tail: tail, reserved_tail: reserved_tail })
       },
       Err(e) => Err(e)
     }
   }
 
-  fn read_keys(db: &mut Database) -> (Key, Key) {
+  fn read_keys(db: &mut Database) -> (Key, Key, Key) {
     let read_options = ReadOptions::new();
     let mut iter = db.iter(read_options);
+    let reserved_tail = Key { keytype: Queue, id: 0 };
     if !iter.valid() {
-      println!("defaulting to 0 keys");
       // we have a db, but no keys in it
       let queue_head = Key { keytype: Queue, id: 0 };
       let queue_tail = Key { keytype: Queue, id: 0 };
-      return (queue_head, queue_tail)
+      return (queue_head, queue_tail, reserved_tail)
     }
     let first = iter.next().unwrap().key();
     let tail = Key::from_u8(first.as_slice());
     if !iter.valid() {
-      println!("only 1 key");
       // we have a db, with only one key. That key is head and tail.
-      return (tail.clone(), tail.clone())
+      return (tail.clone(), tail.clone(), reserved_tail)
     }
-    println!("determining last key");
     let last = iter.last().unwrap().key();
     let head = Key::from_u8(last.as_slice());
-    (head.clone(), tail.clone())
+    (head.clone(), tail.clone(), reserved_tail)
   }
 
   pub fn open(path: Path) -> Result<Journal,Error> {
@@ -151,35 +149,31 @@ impl Journal {
   }
 
   pub fn push(&mut self, data: &[u8]) {
-    self.queue_head.as_slice(|key| {
+    self.head.as_slice(|key| {
       let mut write_options = WriteOptions::new();
       write_options.sync(true);
-      println!("writing at: {}", key);
       self.db.put(write_options, key, data).unwrap_or_else(|err| {
         fail!("error writing to journal: {}", err)
       })
     });
 
-    self.queue_head.id = self.queue_head.id + 1;
+    self.head.id = self.head.id + 1;
   }
 
   pub fn pop(&mut self, remove: bool) -> Option<Vec<u8>> {
-    if self.queue_head.id >= self.queue_tail.id {
-      let res = self.queue_tail.as_slice(|key| {
+    if self.head.id >= self.tail.id {
+      let res = self.tail.as_slice(|key| {
         let read_options = ReadOptions::new();
-        println!("reading at: {}", key);
         let result = self.db.get(read_options, key).unwrap_or_else(|err| {
           fail!("error reading from journal: {}", err)
         });
         result
       });
       if remove {
-        self.queue_tail.as_slice(|key| {
-          self.remove(key);
-        });
+        self.remove(false);
       }
       if res.is_some() {
-        self.queue_tail.id = self.queue_tail.id + 1;
+        self.tail.id = self.tail.id + 1;
       }
       return res;
     } else {
@@ -187,16 +181,41 @@ impl Journal {
     }
   }
 
-  fn remove(&mut self, key: &[u8]) {
-    let mut write_options = WriteOptions::new();
-    write_options.sync(true);
-    self.db.delete(write_options, key).unwrap_or_else(|err| {
-      fail!("error reading from journal: {}", err)
-    })
+  fn remove(&mut self, reserved: bool) {
+    let key = if reserved {
+                self.tail
+              } else {
+                self.reserved_tail
+              };
+    key.as_slice(|raw| {
+      let mut write_options = WriteOptions::new();
+      write_options.sync(true);
+      self.db.delete(write_options, raw).unwrap_or_else(|err| {
+        fail!("error reading from journal: {}", err)
+      })
+    });
+    if reserved {
+      self.advance_to_next_reserved();
+    }
+  }
+
+  fn advance_to_next_reserved(&mut self) {
+    let read_options = ReadOptions::new();
+    let mut iter = self.db.iter(read_options);
+    let next_item = iter.next();
+
+    match next_item {
+      Some(entry) => {
+        let binary_key = entry.key();
+        let next_key = Key::from_u8(binary_key.as_slice());
+        self.reserved_tail = next_key.clone();
+      },
+      None => {}
+    }
   }
 
   pub fn len(&self) -> u64 {
-    self.queue_head.id - self.queue_tail.id
+    self.head.id - self.tail.id
   }
 }
 
