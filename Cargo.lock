@@ -2,17 +2,25 @@
 name = "drossel"
 version = "0.1.0"
 dependencies = [
- "leveldb 0.1.0 (git+https://github.com/skade/leveldb.git#e6b77cf8ac65d61d347cd34e3245daa7bc2de0df)",
- "strand 0.1.0 (git+https://github.com/skade/strand.git#1e31eb38fef06e0a0a002372dac1934c081b1e78)",
+ "leveldb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strand 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "db_key"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "leveldb"
 version = "0.1.0"
-source = "git+https://github.com/skade/leveldb.git#e6b77cf8ac65d61d347cd34e3245daa7bc2de0df"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "db_key 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "strand"
 version = "0.1.0"
-source = "git+https://github.com/skade/strand.git#1e31eb38fef06e0a0a002372dac1934c081b1e78"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 

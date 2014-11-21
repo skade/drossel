@@ -38,7 +38,7 @@ mod tests {
     let mut db = DB::new(dir.path().join("ping"));
     let event = (*command).as_event();
     let res = db.execute(&*event);
-    assert_eq!(Pong, res.unwrap())
+    assert_eq!(DBResult::Pong, res.unwrap())
   }
 
   #[test]
