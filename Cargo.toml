@@ -2,7 +2,7 @@
 
 name = "drossel"
 version = "0.1.0"
-authors = [ "florian.gilcher@asquera.de" ]
+authors = [ "Florian Gilcher <florian.gilcher@asquera.de>" ]
 
 [dependencies]
 
