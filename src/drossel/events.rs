@@ -1,4 +1,4 @@
-use drossel::journal::*;
+use drossel_journal::Journal;
 use strand::mutable::{Event,AsEvent};
 use strand::errors::{Errors};
 use drossel::types::*;

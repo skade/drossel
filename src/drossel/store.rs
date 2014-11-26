@@ -1,7 +1,7 @@
 use strand::mutable::Strand;
 use strand::strand::Mutable;
 use strand::strand;
-use drossel::journal::Journal;
+use drossel_journal::Journal;
 
 #[deriving(Send)]
 pub struct JournaledQueue {

@@ -6,6 +6,7 @@
 extern crate db_key;
 extern crate strand;
 extern crate leveldb;
+extern crate drossel_journal;
 
 pub mod drossel;
 pub mod commands;

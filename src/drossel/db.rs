@@ -1,5 +1,5 @@
 use drossel::store::*;
-use drossel::journal::*;
+use drossel_journal::*;
 use strand::mutable::Strand;
 use strand::mutable::{Event};
 use strand::errors::{Errors};
