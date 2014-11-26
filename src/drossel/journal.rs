@@ -1,11 +1,9 @@
 use db_key;
 use leveldb::database::Database;
 use leveldb::database::error::Error;
-use leveldb::database::comparator::Comparator;
+use leveldb::database::comparator::{OrdComparator};
 use leveldb::database::iterator::{Iterable};
 use leveldb::options::{Options,WriteOptions,ReadOptions};
-
-static COMPARATOR: KeyComparator = KeyComparator { name: "drossel_key_comparator" };
 
 #[deriving(Show,PartialEq,Eq,PartialOrd,Ord,Clone)]
 #[repr(u64)]
@@ -20,14 +18,6 @@ pub type Id = u64;
 pub struct Key {
   id: Id,
   keytype: KeyType,
-}
-
-struct KeyComparator {
-  name: &'static str
-}
-
-impl Comparator<Key> for KeyComparator {
-  fn name(&self) -> *const u8 { self.name.as_ptr() }
 }
 
 impl Key {
@@ -99,7 +89,7 @@ impl Ord for Key {
 }
 
 pub struct Journal {
-  db: Database<Key, KeyComparator>,
+  db: Database<Key>,
   head: Key, // The key that points to the last value written
   tail: Key, // The key that points to the earliest value written, but not read
   reserved_tail: Key // The key that points to the beginning of the reserved block
@@ -109,7 +99,7 @@ impl Journal {
   fn new(path: Path) -> Result<Journal, Error> {
     let mut options = Options::new();
     options.create_if_missing = true;
-    let db = Database::open(path, options, Some(COMPARATOR));
+    let db = Database::open_with_comparator(path, options, OrdComparator);
     let head = Key { keytype: KeyType::Queue, id: 0 };
     let tail = Key { keytype: KeyType::Queue, id: 0 };
     let reserved_tail = Key { keytype: KeyType::Queue, id: 0 };
@@ -122,7 +112,7 @@ impl Journal {
   fn open_existing(path: Path) -> Result<Journal,Error> {
     let mut options = Options::new();
     options.create_if_missing = false;
-    let db = Database::open(path, options, Some(COMPARATOR));
+    let db = Database::open_with_comparator(path, options, OrdComparator);
     match db {
       Ok(mut existing) => {
         let (head, tail, reserved_tail) = Journal::read_keys(&mut existing);
@@ -233,10 +223,7 @@ impl Journal {
 
 #[cfg(test)]
 mod tests {
-  use db_key;
   use drossel::journal::{Key,KeyType,Journal};
-  use leveldb::database::iterator::Iterable;
-  use leveldb::database::options::ReadOptions;
   use std::io::TempDir;
 
   #[test]
@@ -263,10 +250,6 @@ mod tests {
     let dir = TempDir::new("journal_test").unwrap();
     let mut journal = Journal::open(dir.path().join("journal_test")).unwrap();
     journal.push(&[1u8]);
-    let read_options = ReadOptions::new();
-    //for (key, value) in journal.db.iter(read_options) {
-    //  println!("{} {}", key, value);
-    //}
     let res = journal.peek();
     assert!(res.is_some());
   }

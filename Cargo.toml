@@ -7,7 +7,7 @@ authors = [ "florian.gilcher@asquera.de" ]
 [dependencies]
 
 strand = "0.1.0"
-leveldb = "0.1.0"
+leveldb = "0.2.0"
 
 [lib]
 

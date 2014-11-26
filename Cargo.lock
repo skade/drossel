@@ -2,7 +2,7 @@
 name = "drossel"
 version = "0.1.0"
 dependencies = [
- "leveldb 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "leveldb 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "strand 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -13,7 +13,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "leveldb"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "db_key 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
